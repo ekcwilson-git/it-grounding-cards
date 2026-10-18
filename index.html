@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT接地架構圖文教學卡</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#f5f3ef; --card:#fffdf9; --ink:#2a2a2a; --sub:#6b6b6b;
+    --copper:#b87333; --copper2:#d4a574; --accent:#2d5a4a;
+    --tmgb:#c0392b; --tbb:#2980b9; --tgb:#27ae60; --bct:#8e44ad; --mesh:#e67e22;
+    --blueprint:#1a3a5c; --gridline:rgba(255,255,255,0.12);
+  }
+  html,body { height:100%; font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--ink); }
+  .app { max-width:1200px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* header tabs */
+  .tabs { display:flex; gap:4px; padding:16px 20px 0; background:var(--bg); position:sticky; top:0; z-index:100; }
+  .tab { flex:1; padding:14px 8px; border:none; border-radius:12px 12px 0 0; background:#e8e4de; color:var(--sub); font-size:15px; font-weight:600; cursor:pointer; transition:.2s; letter-spacing:1px; }
+  .tab.active { background:var(--card); color:var(--ink); box-shadow:0 -2px 8px rgba(0,0,0,.04); }
+  .tab:hover:not(.active) { background:#ddd8d0; }
+
+  /* card container */
+  .cards { flex:1; padding:0 20px 40px; }
+  .card { display:none; background:var(--card); border-radius:0 16px 16px 16px; padding:32px; box-shadow:0 4px 24px rgba(0,0,0,.06); }
+  .card.active { display:block; animation:fadeIn .4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+
+  h1 { font-size:26px; margin-bottom:6px; letter-spacing:2px; }
+  h1 .en { font-size:13px; color:var(--sub); font-weight:400; display:block; margin-top:2px; }
+  h2 { font-size:18px; margin:28px 0 12px; padding-bottom:8px; border-bottom:2px solid var(--copper2); display:inline-block; }
+  h3 { font-size:15px; margin:18px 0 8px; color:var(--accent); }
+  p { line-height:1.8; margin:8px 0; color:var(--ink); }
+  .lead { font-size:15px; color:var(--sub); margin-bottom:20px; }
+
+  /* term cards */
+  .term-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin:18px 0; }
+  .term-card { background:#fff; border:1px solid #e8e4de; border-radius:12px; padding:16px; text-align:center; transition:.2s; }
+  .term-card:hover { transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,.08); }
+  .term-card .abbr { font-size:22px; font-weight:700; margin-bottom:4px; }
+  .term-card .full { font-size:12px; color:var(--sub); margin-bottom:6px; }
+  .term-card .desc { font-size:13px; color:var(--ink); line-height:1.5; }
+  .tmgb { border-top:4px solid var(--tmgb); }
+  .tbb  { border-top:4px solid var(--tbb); }
+  .tgb  { border-top:4px solid var(--tgb); }
+  .bct  { border-top:4px solid var(--bct); }
+  .mesh { border-top:4px solid var(--mesh); }
+
+  /* diagrams */
+  .diagram { background:#faf8f5; border:1px solid #e0dcd6; border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto; }
+  .diagram svg { max-width:100%; height:auto; display:block; margin:0 auto; }
+  .diagram-title { text-align:center; font-size:13px; color:var(--sub); margin-bottom:12px; }
+
+  /* table */
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+  th,td { padding:10px 12px; border:1px solid #e0dcd6; text-align:left; }
+  th { background:#f0ece6; font-weight:600; }
+  tr:nth-child(even) td { background:#faf8f5; }
+
+  /* steps */
+  .steps { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; }
+  .step { flex:1; min-width:140px; background:#fff; border:1px solid #e0dcd6; border-radius:10px; padding:14px; text-align:center; }
+  .step-num { width:28px; height:28px; background:var(--copper); color:#fff; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; margin-bottom:8px; }
+  .step-title { font-weight:600; font-size:13px; margin-bottom:4px; }
+  .step-desc { font-size:12px; color:var(--sub); }
+
+  /* do/don't */
+  .compare { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+  .compare-box { border-radius:10px; padding:14px; }
+  .compare-box.ok { background:#eafaf1; border:1px solid #a3e9c1; }
+  .compare-box.no { background:#fdf2f2; border:1px solid #f5b7b1; }
+  .compare-box .label { font-weight:700; font-size:13px; margin-bottom:6px; }
+  .compare-box.ok .label { color:#27ae60; }
+  .compare-box.no .label { color:#c0392b; }
+  .compare-box .txt { font-size:12px; line-height:1.6; }
+
+  /* checklist */
+  .checklist { list-style:none; margin:12px 0; }
+  .checklist li { padding:8px 0 8px 28px; position:relative; border-bottom:1px dashed #e0dcd6; font-size:13px; }
+  .checklist li::before { content:"☑"; position:absolute; left:0; color:var(--accent); font-weight:700; }
+
+  /* blueprint style toggle */
+  .style-bar { display:flex; gap:8px; justify-content:flex-end; padding:0 20px 12px; }
+  .style-btn { padding:6px 14px; border:1px solid #ccc; border-radius:20px; background:#fff; font-size:12px; cursor:pointer; }
+  .style-btn.active { background:var(--blueprint); color:#fff; border-color:var(--blueprint); }
+
+  /* blueprint theme overrides */
+  body.blueprint { background:var(--blueprint); --bg:var(--blueprint); --card:rgba(255,255,255,.06); --ink:#e8f1f8; --sub:#8ab4c7; }
+  body.blueprint .card { background:rgba(255,255,255,.08); backdrop-filter:blur(8px); border:1px solid var(--gridline); }
+  body.blueprint .term-card { background:rgba(255,255,255,.06); border-color:var(--gridline); }
+  body.blueprint .diagram { background:rgba(0,0,0,.15); border-color:var(--gridline); }
+  body.blueprint th { background:rgba(255,255,255,.1); }
+  body.blueprint tr:nth-child(even) td { background:rgba(255,255,255,.04); }
+  body.blueprint .step { background:rgba(255,255,255,.06); border-color:var(--gridline); }
+
+  @media(max-width:720px) {
+    .compare { grid-template-columns:1fr; }
+    .term-grid { grid-template-columns:1fr 1fr; }
+    .steps { flex-direction:column; }
+    .card { padding:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="style-bar">
+    <button class="style-btn active" onclick="setTheme('paper')" id="btn-paper">製圖紙</button>
+    <button class="style-btn" onclick="setTheme('blueprint')" id="btn-blueprint">藍圖</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showCard(0)">L1 入門</button>
+    <button class="tab" onclick="showCard(1)">L2 進階</button>
+    <button class="tab" onclick="showCard(2)">L3 工程個案</button>
+  </div>
+  <div class="cards">
+
+    <!-- L1 入門 -->
+    <div class="card active" id="card-0">
+      <h1>IT 接地架構入門 <span class="en">IT Grounding Fundamentals</span></h1>
+      <p class="lead">為什麼數據中心必須做接地？三個核心原因。</p>
+
+      <div class="term-grid">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">突波保護</div>
+          <div class="step-desc">雷擊或開關突波需要一條低阻抗路徑洩放到大地，否則設備會被擊穿。</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">參考電位</div>
+          <div class="step-desc">所有設備共享同一零電位基準，訊號傳輸才不會因電位差而產生雜訊。</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">人身安全</div>
+          <div class="step-desc">故障電流導入大地，觸發保護裝置（斷路器/漏電斷路器）切斷電源。</div>
+        </div>
+      </div>
+
+      <h2>五個關鍵術語</h2>
+      <div class="term-grid">
+        <div class="term-card tmgb">
+          <div class="abbr">TMGB</div>
+          <div class="full">Telecommunications Main Grounding Busbar</div>
+          <div class="desc">電信主接地匯流排<br>位於服務入口／MDA，整棟建築接地系統的根節點</div>
+        </div>
+        <div class="term-card tbb">
+          <div class="abbr">TBB</div>
+          <div class="full">Telecommunications Bonding Backbone</div>
+          <div class="desc">電信等電位主幹<br>平行電纜路徑佈設，連接各區域 TGB</div>
+        </div>
+        <div class="term-card tgb">
+          <div class="abbr">TGB</div>
+          <div class="full">Telecommunications Grounding Busbar</div>
+          <div class="desc">區域接地匯流排<br>設於各機房或機電區，匯集該區設備接地</div>
+        </div>
+        <div class="term-card bct">
+          <div class="abbr">BCT</div>
+          <div class="full">Bonding Conductor for Telecommunications</div>
+          <div class="desc">設備接地導體<br>每台機櫃獨立接至最近 TGB，禁止串接</div>
+        </div>
+        <div class="term-card mesh">
+          <div class="abbr">MESH-BN</div>
+          <div class="full">Mesh Bonding Network</div>
+          <div class="desc">網狀等電位網絡<br>液冷機房地板下銅網，形成全面等電位面</div>
+        </div>
+      </div>
+
+      <h2>接地架構全貌簡圖</h2>
+      <div class="diagram">
+        <div class="diagram-title">樹狀主幹 + 網狀等電位 概念圖</div>
+        <svg viewBox="0 0 800 420" width="800" height="420">
+          <!-- Ground electrode -->
+          <rect x="360" y="380" width="80" height="30" rx="4" fill="#8B7355" stroke="#5d4e37" stroke-width="2"/>
+          <text x="400" y="400" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">接地極系統 ≤1Ω</text>
+          <line x1="400" y1="380" x2="400" y2="340" stroke="#5d4e37" stroke-width="3"/>
+
+          <!-- TMGB -->
+          <rect x="300" y="300" width="200" height="40" rx="6" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+          <text x="400" y="325" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">TMGB 電信主接地匯流排</text>
+          <text x="400" y="290" text-anchor="middle" fill="#c0392b" font-size="11">服務入口 / MDA</text>
+
+          <!-- TBB backbone -->
+          <line x1="400" y1="300" x2="400" y2="200" stroke="#2980b9" stroke-width="4"/>
+          <text x="415" y="250" fill="#2980b9" font-size="11" font-weight="600">TBB 主幹</text>
+
+          <!-- TGB A -->
+          <rect x="220" y="160" width="160" height="40" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+          <text x="300" y="185" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">TGB-A 機房A</text>
+          <line x1="300" y1="200" x2="300" y2="200" stroke="#27ae60" stroke-width="3"/>
+          <line x1="300" y1="200" x2="400" y2="200" stroke="#2980b9" stroke-width="3"/>
+
+          <!-- TGB B -->
+          <rect x="420" y="160" width="160" height="40" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+          <text x="500" y="185" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">TGB-B 機房B</text>
+          <line x1="500" y1="200" x2="500" y2="200" stroke="#27ae60" stroke-width="3"/>
+          <line x1="400" y1="200" x2="500" y2="200" stroke="#2980b9" stroke-width="3"/>
+
+          <!-- Racks under TGB-A -->
+          <rect x="160" y="80" width="50" height="50" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="185" y="110" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">機櫃1</text>
+          <line x1="185" y1="130" x2="185" y2="160" stroke="#8e44ad" stroke-width="2"/>
+          <line x1="185" y1="160" x2="260" y2="160" stroke="#8e44ad" stroke-width="2"/>
+          <text x="200" y="155" fill="#8e44ad" font-size="9">BCT</text>
+
+          <rect x="230" y="80" width="50" height="50" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="255" y="110" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">機櫃2</text>
+          <line x1="255" y1="130" x2="255" y2="160" stroke="#8e44ad" stroke-width="2"/>
+
+          <rect x="300" y="80" width="50" height="50" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="325" y="110" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">機櫃3</text>
+          <line x1="325" y1="130" x2="325" y2="160" stroke="#8e44ad" stroke-width="2"/>
+          <line x1="325" y1="160" x2="340" y2="160" stroke="#8e44ad" stroke-width="2"/>
+
+          <!-- Racks under TGB-B -->
+          <rect x="460" y="80" width="50" height="50" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="485" y="110" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">機櫃4</text>
+          <line x1="485" y1="130" x2="485" y2="160" stroke="#8e44ad" stroke-width="2"/>
+          <line x1="460" y1="160" x2="485" y2="160" stroke="#8e44ad" stroke-width="2"/>
+
+          <rect x="530" y="80" width="50" height="50" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="555" y="110" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">機櫃5</text>
+          <line x1="555" y1="130" x2="555" y2="160" stroke="#8e44ad" stroke-width="2"/>
+
+          <rect x="600" y="80" width="50" height="50" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="625" y="110" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">機櫃6</text>
+          <line x1="625" y1="130" x2="625" y2="160" stroke="#8e44ad" stroke-width="2"/>
+          <line x1="540" y1="160" x2="625" y2="160" stroke="#8e44ad" stroke-width="2"/>
+          <text x="570" y="155" fill="#8e44ad" font-size="9">BCT</text>
+
+          <!-- Building bonding -->
+          <rect x="20" y="300" width="140" height="40" rx="6" fill="#7f8c8d" stroke="#5d6d7e" stroke-width="2"/>
+          <text x="90" y="325" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">建築鋼構/水管/Ufer</text>
+          <line x1="160" y1="320" x2="300" y2="320" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="6,3"/>
+          <text x="230" y="315" text-anchor="middle" fill="#7f8c8d" font-size="10">等電位連結</text>
+
+          <!-- Legend -->
+          <rect x="640" y="300" width="150" height="100" rx="6" fill="#fff" stroke="#e0dcd6" stroke-width="1"/>
+          <text x="650" y="320" font-size="11" font-weight="700">圖例</text>
+          <rect x="650" y="330" width="20" height="12" fill="#c0392b" rx="2"/><text x="675" y="340" font-size="10">TMGB</text>
+          <rect x="650" y="348" width="20" height="12" fill="#2980b9" rx="2"/><text x="675" y="358" font-size="10">TBB</text>
+          <rect x="650" y="366" width="20" height="12" fill="#27ae60" rx="2"/><text x="675" y="376" font-size="10">TGB</text>
+          <rect x="650" y="384" width="20" height="12" fill="#8e44ad" rx="2"/><text x="675" y="394" font-size="10">BCT</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- L2 進階 -->
+    <div class="card" id="card-1">
+      <h1>IT 接地架構進階 <span class="en">Advanced IT Grounding</span></h1>
+      <p class="lead">ANSI TIA-607 標準下的完整架構、規格與施工要點。</p>
+
+      <h2>架構總圖與規格標註</h2>
+      <div class="diagram">
+        <div class="diagram-title">TMGB → TBB → TGB → BCT 完整接地路徑（含規格標註）</div>
+        <svg viewBox="0 0 900 500" width="900" height="500">
+          <!-- Ground -->
+          <ellipse cx="450" cy="460" rx="60" ry="15" fill="#8B7355" stroke="#5d4e37" stroke-width="2"/>
+          <text x="450" y="465" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">大地 Ground</text>
+          <line x1="450" y1="445" x2="450" y2="400" stroke="#5d4e37" stroke-width="4"/>
+          <text x="470" y="425" fill="#5d4e37" font-size="10" font-weight="600">接地極</text>
+          <text x="470" y="438" fill="#c0392b" font-size="10" font-weight="700">≤1Ω</text>
+
+          <!-- TMGB -->
+          <rect x="350" y="350" width="200" height="50" rx="8" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+          <text x="450" y="372" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">TMGB</text>
+          <text x="450" y="388" text-anchor="middle" fill="#ffd" font-size="10">主接地匯流排 @ MDA</text>
+          <text x="560" y="385" fill="#c0392b" font-size="11" font-weight="700">2AWG ↑</text>
+
+          <!-- TBB lines -->
+          <line x1="450" y1="350" x2="450" y2="240" stroke="#2980b9" stroke-width="5"/>
+          <text x="465" y="300" fill="#2980b9" font-size="11" font-weight="600">TBB</text>
+          <text x="465" y="315" fill="#2980b9" font-size="10">平行電纜路徑</text>
+
+          <!-- Horizontal TBB -->
+          <line x1="200" y1="240" x2="700" y2="240" stroke="#2980b9" stroke-width="5"/>
+          <text x="720" y="245" fill="#2980b9" font-size="10">TBB 主幹</text>
+
+          <!-- TGB 1 -->
+          <rect x="130" y="200" width="140" height="40" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+          <text x="200" y="225" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">TGB-1</text>
+          <line x1="200" y1="240" x2="200" y2="200" stroke="#2980b9" stroke-width="3"/>
+          <text x="130" y="195" fill="#2980b9" font-size="10" font-weight="600">&lt;1Ω</text>
+
+          <!-- TGB 2 -->
+          <rect x="380" y="200" width="140" height="40" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+          <text x="450" y="225" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">TGB-2</text>
+          <line x1="450" y1="240" x2="450" y2="200" stroke="#2980b9" stroke-width="3"/>
+
+          <!-- TGB 3 -->
+          <rect x="630" y="200" width="140" height="40" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+          <text x="700" y="225" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">TGB-3</text>
+          <line x1="700" y1="240" x2="700" y2="200" stroke="#2980b9" stroke-width="3"/>
+          <text x="770" y="195" fill="#2980b9" font-size="10" font-weight="600">&lt;1Ω</text>
+
+          <!-- Racks for TGB-1 -->
+          <rect x="80" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="102" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R1</text>
+          <line x1="102" y1="145" x2="102" y2="200" stroke="#8e44ad" stroke-width="2"/>
+          <text x="65" y="175" fill="#8e44ad" font-size="9" font-weight="600">6AWG</text>
+          <text x="65" y="188" fill="#c0392b" font-size="9" font-weight="700">&lt;0.1Ω</text>
+
+          <rect x="145" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="167" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R2</text>
+          <line x1="167" y1="145" x2="167" y2="200" stroke="#8e44ad" stroke-width="2"/>
+
+          <rect x="210" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="232" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R3</text>
+          <line x1="232" y1="145" x2="232" y2="200" stroke="#8e44ad" stroke-width="2"/>
+
+          <!-- Racks for TGB-2 -->
+          <rect x="405" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="427" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R4</text>
+          <line x1="427" y1="145" x2="427" y2="200" stroke="#8e44ad" stroke-width="2"/>
+
+          <rect x="470" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="492" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R5</text>
+          <line x1="492" y1="145" x2="492" y2="200" stroke="#8e44ad" stroke-width="2"/>
+
+          <!-- Racks for TGB-3 -->
+          <rect x="655" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="677" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R6</text>
+          <line x1="677" y1="145" x2="677" y2="200" stroke="#8e44ad" stroke-width="2"/>
+
+          <rect x="720" y="100" width="45" height="45" rx="4" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="742" y="127" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">R7</text>
+          <line x1="742" y1="145" x2="742" y2="200" stroke="#8e44ad" stroke-width="2"/>
+
+          <!-- No daisy chain symbol -->
+          <text x="450" y="70" text-anchor="middle" fill="#c0392b" font-size="12" font-weight="700">✕ 禁止 Daisy-Chain 串接</text>
+          <text x="450" y="85" text-anchor="middle" fill="#c0392b" font-size="10">每櫃必須獨立 BCT 接至最近 TGB</text>
+
+          <!-- Splice warning -->
+          <text x="450" y="175" text-anchor="middle" fill="#e67e22" font-size="11" font-weight="700">⚠ TBB 內嚴禁 Splice，只允許在匯流排端接</text>
+
+          <!-- Building bonding -->
+          <rect x="20" y="350" width="160" height="40" rx="6" fill="#7f8c8d" stroke="#5d6d7e" stroke-width="2"/>
+          <text x="100" y="375" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">建築鋼構 / 水管 / Ufer</text>
+          <line x1="180" y1="370" x2="350" y2="370" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,3"/>
+          <text x="265" y="365" text-anchor="middle" fill="#7f8c8d" font-size="10">等電位連結</text>
+        </svg>
+      </div>
+
+      <h2>六段規格表</h2>
+      <table>
+        <tr><th>連接段</th><th>導體規格</th><th>最大電阻</th><th>端接方式</th><th>備註</th></tr>
+        <tr><td>接地極 → TMGB</td><td>BCT ≥ 2 AWG</td><td>建議 0.1Ω</td><td>Lug 壓接</td><td>連建築接地極</td></tr>
+        <tr><td>TMGB → TBB</td><td>TBB 主幹導體</td><td>—</td><td>匯流排端接</td><td>平行電纜路徑</td></tr>
+        <tr><td>TBB → TGB</td><td>TBB 分支</td><td>&lt; 1Ω</td><td>匯流排端接</td><td>嚴禁 splice</td></tr>
+        <tr><td>TGB → 機櫃 BCT</td><td>≥ 6 AWG</td><td>&lt; 0.1Ω</td><td>Lug 壓接</td><td>每櫃獨立</td></tr>
+        <tr><td>機櫃內設備</td><td>設備廠商指定</td><td>—</td><td>隨設備附帶</td><td>接機櫃接地端子</td></tr>
+        <tr><td>MESH-BN 銅網</td><td>地板下銅網格</td><td>—</td><td>多點焊接</td><td>液冷機房專用</td></tr>
+      </table>
+
+      <h2>四步施工順序</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">安裝 TMGB</div>
+          <div class="step-desc">在服務入口/MDA 安裝主接地匯流排，連接建築接地極與等電位連結</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">佈設 TBB</div>
+          <div class="step-desc">沿電纜路徑佈設等電位主幹，確保不與載流導體同管</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">架設網格</div>
+          <div class="step-desc">液冷機房鋪設地板下 MESH-BN 銅網，形成等電位面</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-title">逐櫃接地</div>
+          <div class="step-desc">每台機櫃獨立 BCT 接至最近 TGB，lug 端接、無 splice</div>
+        </div>
+      </div>
+
+      <h2>三大禁忌：錯誤 vs 正確</h2>
+
+      <h3>❌ Daisy-Chain 串接</h3>
+      <div class="compare">
+        <div class="compare-box no">
+          <div class="label">錯誤做法</div>
+          <div class="txt">機櫃1 → 機櫃2 → 機櫃3 串接，中間斷開則後方全部失去接地</div>
+        </div>
+        <div class="compare-box ok">
+          <div class="label">正確做法</div>
+          <div class="txt">每櫃獨立 BCT 接至最近 TGB，單點故障不影響其他櫃</div>
+        </div>
+      </div>
+
+      <h3>❌ TBB 內 Splice</h3>
+      <div class="compare">
+        <div class="compare-box no">
+          <div class="label">錯誤做法</div>
+          <div class="txt">TBB 導體中間做接續（splice），增加接觸電阻與故障點</div>
+        </div>
+        <div class="compare-box ok">
+          <div class="label">正確做法</div>
+          <div class="txt">TBB 全程無接續，只允許在 TMGB/TGB 匯流排端接</div>
+        </div>
+      </div>
+
+      <h3>❌ 與載流導體同管</h3>
+      <div class="compare">
+        <div class="compare-box no">
+          <div class="label">錯誤做法</div>
+          <div class="txt">TBB 與電力電纜穿同一管槽，電流變化感應雜訊至接地系統</div>
+        </div>
+        <div class="compare-box ok">
+          <div class="label">正確做法</div>
+          <div class="txt">TBB 獨立佈設，平行於電纜路徑但物理隔離</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L3 工程個案 -->
+    <div class="card" id="card-2">
+      <h1>工程個案應用 <span class="en">Engineering Case Study</span></h1>
+      <p class="lead">AIDC 算力中心接地系統實務與液冷機房 MESH-BN 設計。</p>
+
+      <h2>AIDC 平面配置圖</h2>
+      <div class="diagram">
+        <div class="diagram-title">AIDC 算力中心接地配置平面圖</div>
+        <svg viewBox="0 0 900 520" width="900" height="520">
+          <!-- Building outline -->
+          <rect x="50" y="40" width="800" height="420" rx="12" fill="none" stroke="#5d4e37" stroke-width="3"/>
+          <text x="450" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#5d4e37">AIDC 算力中心</text>
+
+          <!-- MDA -->
+          <rect x="70" y="60" width="200" height="120" rx="8" fill="#fdecea" stroke="#c0392b" stroke-width="2"/>
+          <text x="170" y="95" text-anchor="middle" font-size="14" font-weight="700" fill="#c0392b">MDA 主配線區</text>
+          <rect x="120" y="110" width="100" height="40" rx="4" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+          <text x="170" y="135" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">TMGB</text>
+          <text x="170" y="155" text-anchor="middle" fill="#c0392b" font-size="10">服務入口</text>
+
+          <!-- Electrical room -->
+          <rect x="70" y="200" width="200" height="100" rx="8" fill="#eaf2f8" stroke="#2980b9" stroke-width="2"/>
+          <text x="170" y="240" text-anchor="middle" font-size="13" font-weight="700" fill="#2980b9">機電室</text>
+          <text x="170" y="260" text-anchor="middle" fill="#2980b9" font-size="10">UPS / 配電 / 空調</text>
+
+          <!-- HDA Air-cooled -->
+          <rect x="300" y="60" width="250" height="180" rx="8" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+          <text x="425" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#27ae60">風冷 HDA 機房</text>
+          <rect x="330" y="110" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="350" y="135" text-anchor="middle" fill="#fff" font-size="9">櫃1</text>
+          <rect x="380" y="110" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="400" y="135" text-anchor="middle" fill="#fff" font-size="9">櫃2</text>
+          <rect x="430" y="110" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="450" y="135" text-anchor="middle" fill="#fff" font-size="9">櫃3</text>
+          <rect x="480" y="110" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="500" y="135" text-anchor="middle" fill="#fff" font-size="9">櫃4</text>
+          <rect x="330" y="165" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="350" y="190" text-anchor="middle" fill="#fff" font-size="9">櫃5</text>
+          <rect x="380" y="165" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="400" y="190" text-anchor="middle" fill="#fff" font-size="9">櫃6</text>
+          <rect x="430" y="165" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="450" y="190" text-anchor="middle" fill="#fff" font-size="9">櫃7</text>
+          <rect x="480" y="165" width="40" height="40" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="500" y="190" text-anchor="middle" fill="#fff" font-size="9">櫃8</text>
+          <!-- TGB for air-cooled -->
+          <rect x="400" y="220" width="60" height="20" rx="3" fill="#27ae60" stroke="#1e8449" stroke-width="1.5"/>
+          <text x="430" y="234" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">TGB-A</text>
+
+          <!-- Liquid-cooled HDA -->
+          <rect x="580" y="60" width="250" height="180" rx="8" fill="#fef5e7" stroke="#e67e22" stroke-width="2"/>
+          <text x="705" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#e67e22">液冷 HDA 機房</text>
+          <text x="705" y="108" text-anchor="middle" fill="#e67e22" font-size="10">MESH-BN 地板下銅網</text>
+          <!-- Mesh pattern -->
+          <defs>
+            <pattern id="mesh" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M0,20 L20,0 M0,0 L20,20" stroke="#e67e22" stroke-width="0.5" opacity="0.3"/>
+            </pattern>
+          </defs>
+          <rect x="600" y="120" width="210" height="100" fill="url(#mesh)" stroke="#e67e22" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="705" y="175" text-anchor="middle" fill="#e67e22" font-size="11" opacity="0.7">MESH-BN</text>
+          <rect x="620" y="130" width="35" height="35" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="637" y="152" text-anchor="middle" fill="#fff" font-size="8">櫃9</text>
+          <rect x="665" y="130" width="35" height="35" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="682" y="152" text-anchor="middle" fill="#fff" font-size="8">櫃10</text>
+          <rect x="710" y="130" width="35" height="35" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="727" y="152" text-anchor="middle" fill="#fff" font-size="8">櫃11</text>
+          <rect x="755" y="130" width="35" height="35" rx="3" fill="#8e44ad" stroke="#6c3483" stroke-width="1.5"/>
+          <text x="772" y="152" text-anchor="middle" fill="#fff" font-size="8">櫃12</text>
+          <!-- TGB for liquid-cooled -->
+          <rect x="685" y="220" width="60" height="20" rx="3" fill="#27ae60" stroke="#1e8449" stroke-width="1.5"/>
+          <text x="715" y="234" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">TGB-B</text>
+
+          <!-- TBB connections -->
+          <line x1="220" y1="130" x2="300" y2="130" stroke="#2980b9" stroke-width="4"/>
+          <line x1="550" y1="130" x2="580" y2="130" stroke="#2980b9" stroke-width="4"/>
+          <line x1="170" y1="180" x2="170" y2="250" stroke="#2980b9" stroke-width="3"/>
+          <line x1="170" y1="250" x2="400" y2="250" stroke="#2980b9" stroke-width="3"/>
+          <line x1="400" y1="250" x2="715" y2="250" stroke="#2980b9" stroke-width="3"/>
+          <text x="260" y="125" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="600">TBB</text>
+          <text x="565" y="125" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="600">TBB</text>
+
+          <!-- Legend -->
+          <rect x="70" y="340" width="760" height="100" rx="8" fill="#faf8f5" stroke="#e0dcd6" stroke-width="1"/>
+          <text x="90" y="365" font-size="12" font-weight="700">圖例</text>
+          <rect x="90" y="378" width="24" height="14" fill="#c0392b" rx="2"/><text x="120" y="389" font-size="10">TMGB 主接地匯流排</text>
+          <rect x="250" y="378" width="24" height="14" fill="#2980b9" rx="2"/><text x="280" y="389" font-size="10">TBB 等電位主幹</text>
+          <rect x="400" y="378" width="24" height="14" fill="#27ae60" rx="2"/><text x="430" y="389" font-size="10">TGB 區域接地匯流排</text>
+          <rect x="560" y="378" width="24" height="14" fill="#8e44ad" rx="2"/><text x="590" y="389" font-size="10">機櫃 BCT</text>
+          <rect x="90" y="405" width="24" height="14" fill="url(#mesh)" stroke="#e67e22" stroke-width="1" rx="2"/><text x="120" y="416" font-size="10">MESH-BN 地板下銅網</text>
+          <rect x="300" y="405" width="24" height="14" fill="#fdecea" stroke="#c0392b" stroke-width="1" rx="2"/><text x="330" y="416" font-size="10">MDA 主配線區</text>
+          <rect x="470" y="405" width="24" height="14" fill="#eafaf1" stroke="#27ae60" stroke-width="1" rx="2"/><text x="500" y="416" font-size="10">風冷 HDA</text>
+          <rect x="600" y="405" width="24" height="14" fill="#fef5e7" stroke="#e67e22" stroke-width="1" rx="2"/><text x="630" y="416" font-size="10">液冷 HDA</text>
+        </svg>
+      </div>
+
+      <h2>液冷機房 MESH-BN 剖面圖</h2>
+      <div class="diagram">
+        <div class="diagram-title">液冷機房地板下銅網 MESH-BN 剖面示意</div>
+        <svg viewBox="0 0 800 350" width="800" height="350">
+          <!-- Floor layers -->
+          <rect x="50" y="280" width="700" height="30" fill="#a0522d" stroke="#5d3a1a" stroke-width="2"/>
+          <text x="400" y="300" text-anchor="middle" fill="#fff" font-size="11">混凝土基礎層</text>
+
+          <rect x="50" y="250" width="700" height="30" fill="#cd853f" stroke="#8b5a2b" stroke-width="2"/>
+          <text x="400" y="270" text-anchor="middle" fill="#fff" font-size="11">水泥砂漿找平層</text>
+
+          <!-- MESH-BN copper grid -->
+          <rect x="50" y="210" width="700" height="40" fill="#faf8f5" stroke="#e67e22" stroke-width="2"/>
+          <defs>
+            <pattern id="mesh2" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M0,30 L30,0 M0,0 L30,30" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+            </pattern>
+          </defs>
+          <rect x="60" y="218" width="680" height="24" fill="url(#mesh2)"/>
+          <text x="400" y="235" text-anchor="middle" fill="#e67e22" font-size="12" font-weight="700">MESH-BN 地板下銅網（等電位網格）</text>
+
+          <rect x="50" y="170" width="700" height="40" fill="#d2b48c" stroke="#a0522d" stroke-width="2"/>
+          <text x="400" y="195" text-anchor="middle" fill="#5d3a1a" font-size="11">防靜電地板支架層</text>
+
+          <!-- Raised floor tiles -->
+          <rect x="50" y="130" width="700" height="40" fill="#f5f5dc" stroke="#c0c0c0" stroke-width="2"/>
+          <text x="400" y="155" text-anchor="middle" fill="#666" font-size="11">防靜電活動地板</text>
+
+          <!-- Rack -->
+          <rect x="200" y="40" width="100" height="90" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="250" y="75" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">機櫃</text>
+          <text x="250" y="95" text-anchor="middle" fill="#ffd" font-size="10">BCT → TGB</text>
+
+          <rect x="350" y="40" width="100" height="90" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="400" y="75" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">機櫃</text>
+          <text x="400" y="95" text-anchor="middle" fill="#ffd" font-size="10">BCT → TGB</text>
+
+          <rect x="500" y="40" width="100" height="90" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+          <text x="550" y="75" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">機櫃</text>
+          <text x="550" y="95" text-anchor="middle" fill="#ffd" font-size="10">BCT → TGB</text>
+
+          <!-- BCT lines to mesh -->
+          <line x1="250" y1="130" x2="250" y2="218" stroke="#8e44ad" stroke-width="2"/>
+          <line x1="400" y1="130" x2="400" y2="218" stroke="#8e44ad" stroke-width="2"/>
+          <line x1="550" y1="130" x2="550" y2="218" stroke="#8e44ad" stroke-width="2"/>
+
+          <!-- TGB -->
+          <rect x="650" y="60" width="80" height="50" rx="4" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+          <text x="690" y="80" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">TGB</text>
+          <text x="690" y="96" text-anchor="middle" fill="#ffd" font-size="9">區域匯流排</text>
+          <line x1="650" y1="85" x2="600" y2="85" stroke="#27ae60" stroke-width="2"/>
+          <line x1="600" y1="85" x2="600" y2="218" stroke="#27ae60" stroke-width="2"/>
+
+          <!-- Labels -->
+          <text x="30" y="150" text-anchor="end" fill="#666" font-size="10">↑</text>
+          <text x="30" y="165" text-anchor="end" fill="#666" font-size="10">機櫃</text>
+          <text x="30" y="230" text-anchor="end" fill="#e67e22" font-size="10">銅網</text>
+          <text x="30" y="295" text-anchor="end" fill="#666" font-size="10">基礎</text>
+        </svg>
+      </div>
+
+      <h2>接地電阻允收檢查表</h2>
+      <ul class="checklist">
+        <li>接地極系統總接地電阻 ≤ 1Ω</li>
+        <li>TMGB 至建築接地極 BCT 段建議 ≤ 0.1Ω</li>
+        <li>TGB 至 TMGB 電阻值 &lt; 1Ω</li>
+        <li>機櫃 BCT 至最近 TGB 電阻值 &lt; 0.1Ω</li>
+        <li>所有接地連接使用壓接 lug，無 splice</li>
+        <li>TBB 獨立佈設，不與載流導體同管</li>
+        <li>每櫃獨立 BCT，禁止 daisy-chain</li>
+        <li>液冷機房 MESH-BN 銅網多點焊接至 TGB</li>
+        <li>等電位連結建築鋼構、水管、Ufer 接地</li>
+        <li>施工順序：TMGB → TBB → 網格 → 逐櫃</li>
+      </ul>
+
+      <h2>相關標準規範</h2>
+      <table>
+        <tr><th>標準</th><th>名稱</th><th>定位</th></tr>
+        <tr><td>ANSI TIA-607</td><td>Commercial Building Grounding and Bonding Requirements</td><td>核心標準：定義 TMGB/TBB/TGB/BCT 架構與規格</td></tr>
+        <tr><td>ANSI TIA-942</td><td>Telecommunications Infrastructure Standard for Data Centers</td><td>數據中心專用：機房分級、冗餘、接地與整體基礎設施</td></tr>
+        <tr><td>BICSI TDMM</td><td>Telecommunications Distribution Methods Manual</td><td>實務手冊：施工細節、最佳實踐、設計指南</td></tr>
+      </table>
+
+      <p style="margin-top:20px; font-size:12px; color:var(--sub);">本教學卡內容基於 ANSI TIA-607 標準與 AIDC 算力中心接地系統實務整理。實際工程請依最新版標準與現場條件調整。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showCard(n) {
+    document.querySelectorAll('.card').forEach((c,i)=>c.classList.toggle('active',i===n));
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  }
+  function setTheme(name) {
+    document.body.classList.toggle('blueprint', name==='blueprint');
+    document.getElementById('btn-paper').classList.toggle('active', name==='paper');
+    document.getElementById('btn-blueprint').classList.toggle('active', name==='blueprint');
+  }
+  document.addEventListener('keydown', e=>{
+    const tabs = document.querySelectorAll('.tab');
+    let idx = Array.from(tabs).findIndex(t=>t.classList.contains('active'));
+    if(e.key==='ArrowLeft' && idx>0) showCard(idx-1);
+    if(e.key==='ArrowRight' && idx<tabs.length-1) showCard(idx+1);
+  });
+</script>
+</body>
+</html>
